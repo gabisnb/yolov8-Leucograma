@@ -18,15 +18,20 @@ def parse_annotation(xml_file):
             print(coord)
             if coord.tag.find("x") != -1:
                 xCoords.append(float(coord.text))
+                obj.remove(coord)
                 i = coord.tag.replace('x', 'y')
                 print(i)
                 y = obj.find(i)
                 yCoords.append(float(y.text))
-                obj.remove(y)
-            # elif (coord.tag.find("y") != -1):
-            #     yCoords.append(float(coord.text))
-
-            obj.remove(coord)
+                # obj.remove(y)
+            elif (coord.tag.find("y") != -1):
+                yCoords.append(float(coord.text))
+                obj.remove(coord)
+                i = coord.tag.replace('y', 'x')
+                print(i)
+                x = obj.find(i)
+                xCoords.append(float(x.text))
+                # obj.remove(x)
         
         if len(xCoords) != len(yCoords):
             print("Erro: numero de coordenadas incompatível")
@@ -34,6 +39,7 @@ def parse_annotation(xml_file):
         xmin, ymin, width, height = calculate_bounding_box_normalized(xCoords, yCoords)
 
         # adds points tag
+        print(xCoords)
         points = ET.Element("points")
         for i in range(len(xCoords)):
             newX = ET.Element("x" + str(i+1))
