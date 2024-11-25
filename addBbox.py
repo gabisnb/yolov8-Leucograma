@@ -14,23 +14,27 @@ def parse_annotation(xml_file):
         
         xCoords = []
         yCoords = []
-        for coord in obj:
+        elements = []
+        for child in obj:
+            elements.append(child)
+
+        for coord in elements:
             print(coord)
             if coord.tag.find("x") != -1:
                 xCoords.append(float(coord.text))
                 obj.remove(coord)
-                i = coord.tag.replace('x', 'y')
-                print(i)
-                y = obj.find(i)
-                yCoords.append(float(y.text))
+                # i = coord.tag.replace('x', 'y')
+                # print(i)
+                # y = obj.find(i)
+                # yCoords.append(float(y.text))
                 # obj.remove(y)
             elif (coord.tag.find("y") != -1):
                 yCoords.append(float(coord.text))
                 obj.remove(coord)
-                i = coord.tag.replace('y', 'x')
-                print(i)
-                x = obj.find(i)
-                xCoords.append(float(x.text))
+                # i = coord.tag.replace('y', 'x')
+                # print(i)
+                # x = obj.find(i)
+                # xCoords.append(float(x.text))
                 # obj.remove(x)
         
         if len(xCoords) != len(yCoords):
@@ -40,6 +44,7 @@ def parse_annotation(xml_file):
 
         # adds points tag
         print(xCoords)
+        print(yCoords)
         points = ET.Element("points")
         for i in range(len(xCoords)):
             newX = ET.Element("x" + str(i+1))
@@ -77,11 +82,11 @@ def calculate_bounding_box_normalized(xCoords, yCoords):
     coords = [xCoords, yCoords]
     points = np.column_stack(coords)
 
-    min_x = float(np.min(points[0, :]))
-    min_y = float(np.min(points[1, :]))
+    min_x = float(np.min(points[:, 0]))
+    min_y = float(np.min(points[:, 1]))
 
-    max_x = float(np.max(points[0, :]))
-    max_y = float(np.max(points[1, :]))
+    max_x = float(np.max(points[:, 0]))
+    max_y = float(np.max(points[:, 1]))
 
     width =  max_x - min_x
     height = max_y - min_y
