@@ -1,0 +1,12 @@
+path: vet_v8/
+train: 'images/train'
+val: 'images/test'
+ 
+# class names
+names: 
+  0: "neutrofilo"
+  1: "linfocito"
+  2: "monocito"
+  3: "bastonete"
+  4: "metamielocito"
+  5: "eosinofilo"
