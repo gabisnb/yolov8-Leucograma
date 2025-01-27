@@ -29,8 +29,10 @@ def extract_points(obj):
     points_temp = obj.find("points")
 
     if points_temp is None:
-        print("No points found")
-        exit(1)
+        if obj.find("bbox") is not None:
+            print("No points found")
+            exit(1)
+        points_temp = obj
 
     points = []
     i = 1
@@ -84,6 +86,38 @@ def xml_to_txt(xml_file, output_dir, image_size):
 
             # Write the annotation in YOLO format: class_id x_center y_center width height
             f.write(f"{class_id} {x_center} {y_center} {normalized_width} {normalized_height}\n")
+
+def xml_to_txt_segmentation(xml_file, output_dir, image_size):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+    txt_file = os.path.join(output_dir, os.path.basename(xml_file).replace(".xml", ".txt"))
+
+    with open(txt_file, "w") as f:
+        for obj in root.findall(".//objects/*"):
+            class_name = unicodedata.normalize("NFKD", obj.tag).encode("ascii", "ignore").decode("ascii")
+            print("Class name: ", class_name)
+
+            if class_name not in class_dict:
+                print(f"Unknown class: {class_name}")
+                continue
+
+            # Extract bounding box details
+            points = extract_points(obj)
+            class_id = class_dict[class_name]
+
+            # Calculate YOLO format: normalized points
+            dw = 1.0 / image_size[1]
+            dh = 1.0 / image_size[0]
+            for point in points:
+                point[0] = point[0] * dw
+                point[1] = point[1] * dh
+
+            # Write the annotation in YOLO format: class_id x_center y_center width height
+            file = f"{class_id}"
+            for point in points:
+                file = file + " " + str(point[0]) + " " + str(point[1])
+            file = file + "\n"
+            f.write(file)
                 
 
 def process_dataset(image_dir, xml_dir, output_dir):
@@ -100,6 +134,21 @@ def process_dataset(image_dir, xml_dir, output_dir):
             # Convert XML to YOLO format
             xml_to_txt(xml_path, output_dir, image_size)
 
+def process_dataset_segmentation(image_dir, xml_dir, output_dir):
+    for xml_file in os.listdir(xml_dir):
+        if xml_file.endswith(".xml"):
+            print(f"Processing {xml_file}")
+            xml_path = os.path.join(xml_dir, xml_file)
+
+            # Extract the corresponding image path and get image size
+            image_path = os.path.join(image_dir, xml_file.replace(".xml", ".jpg"))
+            img = Image.open(image_path)
+            image_size = img.size
+
+            # Convert XML to YOLO format
+            # xml_to_txt(xml_path, output_dir, image_size)
+            xml_to_txt_segmentation(xml_path, output_dir, image_size)
+
 
 # *********************************************MAIN*********************************************
 def __main__():
@@ -110,8 +159,11 @@ def __main__():
     # if not os.path.exists("../datasets/leucograma/labels/valid"):
     #     os.makedirs("../datasets/leucograma/labels/valid")
 
-    process_dataset("datasets/vet_v8/images/train", "datasets/vet_v8/annotations/train", "datasets/vet_v8/labels/train")
-    process_dataset("datasets/vet_v8/images/test", "datasets/vet_v8/annotations/test", "datasets/vet_v8/labels/test")
+    process_dataset_segmentation("datasets/vet_v8/images/train", "datasets/vet_v8/annotations/train", "datasets/vet_v8/labels/train")
+    process_dataset_segmentation("datasets/vet_v8/images/test", "datasets/vet_v8/annotations/test", "datasets/vet_v8/labels/test")
+    
+    # process_dataset("datasets/vet_v8/images/train", "datasets/vet_v8/annotations/train", "datasets/vet_v8/labels/train")
+    # process_dataset("datasets/vet_v8/images/test", "datasets/vet_v8/annotations/test", "datasets/vet_v8/labels/test")
 
 
 if(__name__ == "__main__"):
