@@ -1,6 +1,6 @@
 path: vet_v8/
 train: 'images/train'
-val: 'images/test'
+val: 'images/val'
  
 # class names
 names: 
