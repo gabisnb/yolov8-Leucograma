@@ -1,6 +1,6 @@
 path: vet_v8_unbalanced/
 train: 'images/train'
-val: 'images/val'
+val: 'images/test'
  
 # class names
 names: 
